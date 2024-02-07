@@ -198,7 +198,7 @@ app.delete('/cart/remove/:productId', async (req, res) => {
     const userId = req.query.userId
       const { productId } = req.params;
       const cart = await Cart.findOne({ userId })
-      console.log("RUNNING" , cart.products)
+    //   console.log("RUNNING" , cart.products)
       cart.products = cart.products.filter(p => String(p.productId) !== String(productId));
       await cart.save();
       res.sendStatus(200);
