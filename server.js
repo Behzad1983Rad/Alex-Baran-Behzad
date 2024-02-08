@@ -52,6 +52,7 @@ const cartSchema = new mongoose.Schema({
 const Product = mongoose.model("Product", productSchema)
 const Cart = mongoose.model("Cart", cartSchema)
 
+
 app.get('/', (req, res) => {
     res.json({
         message: "Cosmic Backend Working"
@@ -93,7 +94,6 @@ app.get('/products/search', async (req, res) => {
     try {
         const regex = new RegExp(query, 'i')
         const foundProducts = await Product.find({ $or: [{ name: regex }, { description: regex }] })
-        console.log(foundProducts)
         res.json(foundProducts)
     } catch (error) {
         console.error(error)
