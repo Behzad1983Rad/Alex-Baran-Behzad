@@ -1,23 +1,19 @@
 import "dotenv/config";
-import express , { Router} from "express";
+import express, { Router } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import checkToken from './config/checkToken.js'
-import usersRouter from './routes/users.js'
+import checkToken from '../../config/checkToken.js'
+import usersRouter from '../../routes/users.js'
+import serverless from "serverless-http"
 
-const api = express()
+const api = express();
 
-app.use(cors());
-app.use(bodyParser.json());
+api.use(cors());
+api.use(bodyParser.json());
 
-app.use(checkToken)
-app.use('/users', usersRouter)
-
-
-app.listen(port, () => {
-    console.log(`Listening on port: ${port}`)
-})
+api.use(checkToken)
+api.use('/users', usersRouter)
 
 mongoose.connect(process.env.DATABASE_URL)
 
@@ -86,11 +82,11 @@ router.post('/products/new', (req, res) => {
 
 router.get('/products/search', async (req, res) => {
     const { query } = req.query
-    // console.log(query)
+    console.log(query)
     try {
         const regex = new RegExp(query, 'i')
         const foundProducts = await Product.find({ $or: [{ name: regex }, { description: regex }] })
-        // console.log(foundProducts)
+        console.log(foundProducts)
         res.json(foundProducts)
     } catch (error) {
         console.error(error)
@@ -162,7 +158,7 @@ router.get('/cart', async (req, res) => {
     const userId = req.query.userId
   try {
       const cart = await Cart.findOne({ userId }).populate('products.productId'); 
-    //   console.log(cart)
+      console.log(cart)
       res.json(cart);
   } catch (error) {
       console.error(error);
@@ -190,12 +186,12 @@ router.put('/cart/update/:productId', async (req, res) => {
     }
   });
 
-  router.delete('/cart/remove/:productId', async (req, res) => {
+router.delete('/cart/remove/:productId', async (req, res) => {
   try {
     const userId = req.query.userId
       const { productId } = req.params;
       const cart = await Cart.findOne({ userId })
-    //   console.log("RUNNING" , cart.products)
+      console.log("RUNNING" , cart.products)
       cart.products = cart.products.filter(p => String(p.productId) !== String(productId));
       await cart.save();
       res.sendStatus(200);
@@ -204,4 +200,8 @@ router.put('/cart/update/:productId', async (req, res) => {
       res.sendStatus(500);
   }
 });
+
+api.use("/api/", router)
+
+export const handler = serverless(api)
 
