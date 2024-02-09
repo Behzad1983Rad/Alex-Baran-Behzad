@@ -1,23 +1,18 @@
 import "dotenv/config";
-import express from "express";
+import express , { Router} from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import checkToken from './config/checkToken.js'
 import usersRouter from './routes/users.js'
 
-
-
-
-const app = express();
+const api = express()
 
 app.use(cors());
 app.use(bodyParser.json());
 
 app.use(checkToken)
 app.use('/users', usersRouter)
-
-const port = process.env.PORT || 4000;
 
 
 app.listen(port, () => {
@@ -52,14 +47,16 @@ const cartSchema = new mongoose.Schema({
 const Product = mongoose.model("Product", productSchema)
 const Cart = mongoose.model("Cart", cartSchema)
 
-app.get('/', (req, res) => {
+const router = Router()
+
+router.get('/', (req, res) => {
     res.json({
         message: "Cosmic Backend Working"
     })
 })
 
 
-app.get('/products', async (req, res) => {
+router.get('/products', async (req, res) => {
     try {
         const allProducts = await Product.find({})
         res.json(allProducts)
@@ -68,7 +65,7 @@ app.get('/products', async (req, res) => {
     }
 })
 
-app.post('/products/new', (req, res) => {
+router.post('/products/new', (req, res) => {
     const product = req.body
     const newProduct = new Product({
         name: product.name,
@@ -87,7 +84,7 @@ app.post('/products/new', (req, res) => {
 })
 
 
-app.get('/products/search', async (req, res) => {
+router.get('/products/search', async (req, res) => {
     const { query } = req.query
     // console.log(query)
     try {
@@ -102,7 +99,7 @@ app.get('/products/search', async (req, res) => {
 });
 
 
-app.get('/products/:id', async (req, res) => {
+router.get('/products/:id', async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)
         res.json(product)
@@ -111,7 +108,7 @@ app.get('/products/:id', async (req, res) => {
     }
 })
 
-app.delete('/products/:id', (req, res) => {
+router.delete('/products/:id', (req, res) => {
     Product.deleteOne({"_id": req.params.id})
     .then(() => {
         res.sendStatus(200)
@@ -121,7 +118,7 @@ app.delete('/products/:id', (req, res) => {
     })
 })
 
-app.put('/products/:id', (req, res) => {
+router.put('/products/:id', (req, res) => {
     Product.updateOne({"_id": req.params.id}, {
         name: req.body.name, 
         description: req.body.description, 
@@ -138,7 +135,7 @@ app.put('/products/:id', (req, res) => {
     })
 })
 
-app.post('/cart/add', async (req, res) => {
+router.post('/cart/add', async (req, res) => {
   try {
       const { productId, quantity, userId } = req.body;
       // Check if the user already has a cart or create one
@@ -161,7 +158,7 @@ app.post('/cart/add', async (req, res) => {
   }
 });
 
-app.get('/cart', async (req, res) => {
+router.get('/cart', async (req, res) => {
     const userId = req.query.userId
   try {
       const cart = await Cart.findOne({ userId }).populate('products.productId'); 
@@ -173,7 +170,7 @@ app.get('/cart', async (req, res) => {
   }
 });
 
-app.put('/cart/update/:productId', async (req, res) => {
+router.put('/cart/update/:productId', async (req, res) => {
     try {
         const { productId } = req.params;
         const { quantity } = req.body;
@@ -193,7 +190,7 @@ app.put('/cart/update/:productId', async (req, res) => {
     }
   });
 
-app.delete('/cart/remove/:productId', async (req, res) => {
+  router.delete('/cart/remove/:productId', async (req, res) => {
   try {
     const userId = req.query.userId
       const { productId } = req.params;

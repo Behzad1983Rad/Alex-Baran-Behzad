@@ -25,7 +25,7 @@ async function login(req, res) {
         if (!user) throw new Error()
 
         const matching = await bcrypt.compare(req.body.password, user.password) 
-        console.log(matching)
+        // console.log(matching)
         if (!matching) throw new Error()
 
         const token = createJWT(user)
